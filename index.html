@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <canvas id="dataChart" width="400" height="400"></canvas>
+    </div>
+</body>
+</html>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script>
+    var ctx = document.getElementById('dataChart').getContext('2d');
+
+    Chart.defaults.global.elements.rectangle.backgroundColor = 'rgba(255, 99, 132, 0.2)';
+
+    let infoLabels = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange', 'mmmmmm'];
+    let infoHoverLabels = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange', 'mmmmmm'];
+    let infoData = [12, 19, 3, 5, 2, 3];
+
+    
+
+    var myBarChart = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+            labels: infoLabels,
+            datasets: [{
+                label: 'Deaths per million people',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                barThickness: 'flex',
+                data: infoData,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        var label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+                        if (label) {
+                            label += ': ';
+                        }
+                        label += 'TESTING';
+                        return label;
+                    }
+                }
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+</script>
