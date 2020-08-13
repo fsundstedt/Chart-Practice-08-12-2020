@@ -17,11 +17,58 @@
 
     Chart.defaults.global.elements.rectangle.backgroundColor = 'rgba(255, 99, 132, 0.2)';
 
-    let infoLabels = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange', 'mmmmmm'];
-    let infoHoverLabels = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange', 'mmmmmm'];
+    let infoLabels = [];
+    let infoHoverLabels = ['Redmmm', 'Bluemmm', 'Yellowmmm', 'Greenmmm', 'Purplemmm', 'Orangemmm', 'mmmmmm'];
     let infoData = [12, 19, 3, 5, 2, 3];
 
-    
+    let rawObjects = [];
+    let rawArrays = [];
+    let sortedArrays = [];
+    let rawLabels = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orangemmmm', 'mmmmmmmmm'];
+
+    async function getData(url) {
+        const response = await fetch(url, {
+            method: 'GET',
+        });
+        let data = await response.json();
+        data = data.data
+
+
+
+        data.map((country, index) => {
+            function shortenName(name) {
+                if (name.length > 8) {
+                    return name.substring(0,8) + '...';
+                } else {
+                    return country.name;
+                }
+            };
+
+            let singleArray = [country.name, shortenName(country.name), (country.latest_data.deaths / country.population) * 1000000];
+            rawArrays.push(singleArray);
+        });
+
+        const sortedArray = rawArrays.sort(function(a, b) {
+            return b[2] - a[2];
+        });
+
+        sortedArray.map((country) => {
+            console.log(country[2])
+        });
+    };
+
+    const url = 'https://corona-api.com/countries';
+
+    getData(url);
+    // name, short name, population, deaths
+
+    const abLabels = rawLabels.map((name, index) => {
+        if (name.length > 8) {
+            infoLabels[index] = name.substring(0,8) + '...';
+        } else {
+            infoLabels[index] = name;
+        }
+    });
 
     var myBarChart = new Chart(ctx, {
         type: 'horizontalBar',
@@ -30,7 +77,6 @@
             datasets: [{
                 label: 'Deaths per million people',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                barThickness: 'flex',
                 data: infoData,
                 borderWidth: 1
             }]
@@ -38,13 +84,18 @@
         options: {
             tooltips: {
                 callbacks: {
+                    title: function(tooltipItem, data) {
+                        var title = 'aaa';
+                        title = infoHoverLabels[tooltipItem[0].index];
+                        return title;
+                    },
                     label: function(tooltipItem, data) {
                         var label = data.datasets[tooltipItem.datasetIndex].label || '';
 
                         if (label) {
                             label += ': ';
                         }
-                        label += 'TESTING';
+                        label += Math.round(tooltipItem.xLabel * 100) / 100;
                         return label;
                     }
                 }
