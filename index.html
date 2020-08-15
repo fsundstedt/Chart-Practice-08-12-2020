@@ -24,6 +24,9 @@
     let rawObjects = [];
     let rawArrays = [];
     let sortedArrays = [];
+    let sortedShortLabels = [];
+    let sortedLongLabels = [];
+    let deathsPerMillion = [];
     let rawLabels = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orangemmmm', 'mmmmmmmmm'];
 
     async function getData(url) {
@@ -48,16 +51,24 @@
             rawArrays.push(singleArray);
         });
 
-        const sortedArray = rawArrays.sort(function(a, b) {
+        sortedArrays = rawArrays.sort(function(a, b) {
             return b[2] - a[2];
         });
 
-        sortedArray.map((country) => {
-            console.log(country[2])
+        sortedArrays.map((country, index) => {
+            sortedLongLabels.push(country[0]);
+            console.log(sortedLongLabels.push(country[0]));
+            sortedShortLabels.push(country[1]);
+            console.log(sortedLongLabels.push(country[1]));
+            deathsPerMillion.push(country[2]);
+            console.log(sortedLongLabels.push(country[2]));
         });
+
     };
 
     const url = 'https://corona-api.com/countries';
+
+    console.log(sortedLongLabels);
 
     getData(url);
     // name, short name, population, deaths
@@ -73,11 +84,11 @@
     var myBarChart = new Chart(ctx, {
         type: 'horizontalBar',
         data: {
-            labels: infoLabels,
+            labels: sortedShortLabels,
             datasets: [{
                 label: 'Deaths per million people',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                data: infoData,
+                data: deathsPerMillion,
                 borderWidth: 1
             }]
         },
@@ -86,7 +97,7 @@
                 callbacks: {
                     title: function(tooltipItem, data) {
                         var title = 'aaa';
-                        title = infoHoverLabels[tooltipItem[0].index];
+                        title = sortedLongLabels[tooltipItem[0].index];
                         return title;
                     },
                     label: function(tooltipItem, data) {
