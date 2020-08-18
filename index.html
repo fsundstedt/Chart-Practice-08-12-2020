@@ -4,10 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-</head>
+    <link rel="stylesheet" type="text/css" href="styles.css"></head>
+    <link href="https://fonts.googleapis.com/css?family=Quicksand:300,500" rel="stylesheet">
 <body>
     <div>
-        <canvas id="dataChart" width="400" height="400"></canvas>
+        <div>
+            <h3 class="Title">Covid deaths per million people</h3>
+        </div>
+        <div style="position: relative; width:8000px">
+            <canvas id="dataChart"></canvas>
+        </div>
+        <div class='Footnotes'>
+            <div>
+                <h4 class='Footnotes-Header'>
+                    Notes:
+                </h4>
+                <ul class="Footnotes-List">
+                    <li>Data taken from <a href='https://about-corona.net/' target='blank'>https://about-corona.net/</a></li>
+                    <li>Only countries with populations over 1,000,000 shown</li>
+                    <li>Countries with 0 deaths excluded</li>
+                    <li>API shows USA population as ~310,000,000. Chart corrects to ~330,138,000, per <a href='https://www.census.gov/popclock/' target='blank'>https://www.census.gov/popclock/</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 </body>
 </html>
@@ -16,7 +35,13 @@
     var ctx = document.getElementById('dataChart').getContext('2d');
 
     Chart.defaults.global.elements.rectangle.backgroundColor = 'rgba(255, 99, 132, 0.2)';
+    Chart.defaults.global.elements.rectangle.borderWidth = 1;
+    Chart.defaults.global.elements.rectangle.borderColor = 'rgba(130, 130, 130, 0.6)';
 
+    let barColor = [];
+
+    let maxDeaths = 0;
+    let totalDeaths = 0;
     let rawArrays = [];
     let sortedArrays = [];
     let sortedShortLabels = [];
@@ -25,8 +50,16 @@
 
     const dataUrl = 'https://corona-api.com/countries';
 
+    function changeColor(deaths) {
+        if (deaths > 0) {
+            barColor.push(`rgba(255, 0, 0, ${deaths/maxDeaths})`);
+        } else {
+            barColor.push(`rgba(255, 0, 0, 0.0001)`);
+        }
+    }
+
     function shortenName(country) {
-                    if (country.name.length > 8) {
+                    if (country.name.length > 12) {
                         return country.name.substring(0,8) + '...';
                     } else {
                         return country.name;
@@ -34,19 +67,23 @@
                 };
 
     async function getData(url) {
-        const response = await fetch(url, {
-            method: 'GET',
-        });
-        let rawData = await response.json();
-        let data = rawData.data;
-        return data;
+        // const response = await fetch(url, {
+        //     method: 'GET',
+        // });
+        // let rawData = await response.json();
+        // let data = rawData.data;
+        // return data;
     };
 
     function arrangeArray(info) {
         info.map((country) => {
-            if (!isNaN((country.latest_data.deaths / country.population) * 1000000)) {
-                let singleArray = [country.name, shortenName(country), (country.latest_data.deaths / country.population) * 1000000];
+            if (!isNaN((country.latest_data.deaths / country.population) * 1000000) && country.population >= 1000000 && country.latest_data.deaths > 0) {
+                let singleArray = [
+                    country.name,
+                    shortenName(country),
+                    (country.latest_data.deaths / (country.name === 'USA' ? 330138000 : country.population)) * 1000000];
                 rawArrays.push(singleArray);
+                totalDeaths += country.latest_data.deaths;
             } else {
                 return
             };
@@ -56,13 +93,15 @@
             return b[2] - a[2];
         });
 
+        maxDeaths = sortedArrays[0][2];
+
         sortedArrays.map((country, index) => {
             sortedLongLabels.push(country[0]);
-            sortedShortLabels.push(country[1]);
+            sortedShortLabels.push(country[1] + ': ' + country[2].toFixed(1));
             deathsPerMillion.push(country[2]);
-        });
 
-        console.log(sortedShortLabels[0])
+            changeColor(country[2]);
+        });
     }
 
     async function useData (url) {
@@ -74,15 +113,17 @@
         data: {
             labels: sortedShortLabels,
             datasets: [{
-                barThickness: 6,
                 label: 'Deaths per million people',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                backgroundColor: barColor,
                 data: deathsPerMillion,
-                borderWidth: 1
             }]
         },
         options: {
+            legend: {
+                display: false,
+            },
             tooltips: {
+                caretSize: 5,
                 callbacks: {
                     title: function(tooltipItem, data) {
                         var title = sortedLongLabels[tooltipItem[0].index];
@@ -102,13 +143,23 @@
             scales: {
                 yAxes: [{
                     ticks: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        fontSize: 15,
+                        fontFamily: "'Quicksand', sans-serif",
                     }
-                }]
+                }],
+                xAxes: [{
+                    ticks: {
+                        fontSize: 15,
+                        fontFamily: "'Quicksand', sans-serif",
+                        }
+                    }],
+                
             }
         }
     });
     };
 
+    // console.log(barColor);
     useData(dataUrl);
 </script>
